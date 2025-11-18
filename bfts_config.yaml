@@ -23,7 +23,7 @@ exec:
 generate_report: True
 # LLM settings for final report from journal
 report:
-  model: gpt-4o-2024-11-20
+  model: gemini-3.0-pro-preview
   temp: 1.0
 
 experiment:
@@ -54,20 +54,20 @@ agent:
 
   # LLM settings for coding
   code:
-    model: anthropic.claude-3-5-sonnet-20241022-v2:0
+    model: gemini-3.0-pro-preview
     temp: 1.0
     max_tokens: 12000
 
   # LLM settings for evaluating program output / tracebacks
   feedback:
-    model: gpt-4o-2024-11-20
+    model: gemini-3.0-pro-preview
     # gpt-4o
-    temp: 0.5
+    temp: 1.0
     max_tokens: 8192
 
   vlm_feedback:
-    model: gpt-4o-2024-11-20
-    temp: 0.5
+    model: gemini-3.0-pro-preview
+    temp: 1.0
     max_tokens: null
 
   search:
@@ -79,9 +79,9 @@ agent:
   # If not specified, the default behavior will be used.
 
   # summary:
-  #   model: gpt-4o
-  #   temp: 0.3
+  #   model: gemini-3.0-pro-preview
+  #   temp: 1.0
 
   # select_node:
-  #   model: gpt-4o
-  #   temp: 0.3
+  #   model: gemini-3.0-pro-preview
+  #   temp: 1.0

@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+import os
 
 from .utils import FunctionSpec, OutputType, opt_messages_to_list, backoff_create
 from funcy import notnone, once, select_values
@@ -17,10 +18,26 @@ OPENAI_TIMEOUT_EXCEPTIONS = (
     openai.InternalServerError,
 )
 
+GEMINI_3_CONFIG = {
+    "google": {
+        "thinking_config": {
+            "thinking_level": "high",
+            "include_thoughts": False
+        },
+        "media_resolution": "media_resolution_medium"
+    }
+}
+
 def get_ai_client(model: str, max_retries=2) -> openai.OpenAI:
     if model.startswith("ollama/"):
         client = openai.OpenAI(
             base_url="http://localhost:11434/v1", 
+            max_retries=max_retries
+        )
+    elif "gemini" in model:
+        client = openai.OpenAI(
+            api_key=os.environ["GEMINI_API_KEY"],
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
             max_retries=max_retries
         )
     else:
@@ -46,6 +63,10 @@ def query(
 
     if filtered_kwargs.get("model", "").startswith("ollama/"):
        filtered_kwargs["model"] = filtered_kwargs["model"].replace("ollama/", "")
+    
+    if filtered_kwargs.get("model") == "gemini-3.0-pro-preview":
+        filtered_kwargs["temperature"] = 1.0
+        filtered_kwargs["extra_body"] = GEMINI_3_CONFIG
 
     t0 = time.time()
     completion = backoff_create(

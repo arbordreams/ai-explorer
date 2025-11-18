@@ -348,7 +348,7 @@ def overall_summarize(journals, cfg=None):
 
     from tqdm import tqdm
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         results = list(
             tqdm(
                 executor.map(process_stage, range(len(list(journals))), journals),

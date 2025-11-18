@@ -742,7 +742,7 @@ def filter_experiment_summaries(exp_summaries, step_name):
     return filtered_summaries
 
 
-def gather_citations(base_folder, num_cite_rounds=20, small_model="gpt-4o-2024-05-13"):
+def gather_citations(base_folder, num_cite_rounds=20, small_model="gemini-3.0-pro-preview"):
     """
     Gather citations for a paper, with ability to resume from previous progress.
 
@@ -859,8 +859,8 @@ def perform_writeup(
     citations_text=None,
     no_writing=False,
     num_cite_rounds=20,
-    small_model="gpt-4o-2024-05-13",
-    big_model="o1-2024-12-17",
+    small_model="gemini-3.0-pro-preview",
+    big_model="gemini-3.0-pro-preview",
     n_writeup_reflections=3,
     page_limit=4,
 ):
@@ -1250,14 +1250,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0",
+        default="gemini-3.0-pro-preview",
         choices=AVAILABLE_LLMS,
         help="Model to use for citation collection (small model).",
     )
     parser.add_argument(
         "--big-model",
         type=str,
-        default="o1-2024-12-17",
+        default="gemini-3.0-pro-preview",
         choices=AVAILABLE_LLMS,
         help="Model to use for final writeup (big model).",
     )

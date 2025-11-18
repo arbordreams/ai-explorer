@@ -12,6 +12,7 @@ from ai_scientist.llm import (
     AVAILABLE_LLMS,
     create_client,
     get_response_from_llm,
+    extract_json_between_markers,
 )
 
 from ai_scientist.tools.semantic_scholar import SemanticScholarSearchTool
@@ -211,10 +212,18 @@ def generate_temp_free_idea(
                         tool = tools_dict[action]
                         # Parse arguments
                         try:
-                            arguments_json = json.loads(arguments_text)
-                        except json.JSONDecodeError:
+                            arguments_json = extract_json_between_markers(arguments_text)
+                            if arguments_json is None:
+                                arguments_json = json.loads(arguments_text)
+                        except (json.JSONDecodeError, ValueError):
+                            # Fallback if extract_json_between_markers didn't work and caused error
+                            # We try json.loads directly as a last resort, but if it fails,
+                            # we let the JSONDecodeError be raised to be caught by the outer loop
+                            # or handle it specifically here.
+                            # The previous logic had a redundant try/except here.
+                            # Let's simplify:
                             raise ValueError(f"Invalid arguments JSON for {action}.")
-
+                        
                         # Use the tool
                         try:
                             # Assuming the arguments match the parameters of the tool
@@ -225,7 +234,10 @@ def generate_temp_free_idea(
                     elif action == "FinalizeIdea":
                         # Parse arguments
                         try:
-                            arguments_json = json.loads(arguments_text)
+                            arguments_json = extract_json_between_markers(arguments_text)
+                            if arguments_json is None:
+                                arguments_json = json.loads(arguments_text)
+                            
                             idea = arguments_json.get("idea")
                             if not idea:
                                 raise ValueError("Missing 'idea' in arguments.")
@@ -236,7 +248,11 @@ def generate_temp_free_idea(
                             idea_finalized = True
                             break
                         except json.JSONDecodeError:
-                            raise ValueError("Invalid arguments JSON for FinalizeIdea.")
+                             raise ValueError("Invalid arguments JSON for FinalizeIdea.")
+                        except ValueError as e:
+                             # Re-raise specific validation errors (like missing 'idea')
+                             # so they are reported correctly, instead of masking them as JSON errors
+                             raise e
                     else:
                         print(
                             "Invalid action. Please specify one of the available tools."

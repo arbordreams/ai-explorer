@@ -9,6 +9,15 @@ import backoff
 import openai
 
 MAX_NUM_TOKENS = 4096
+GEMINI_3_CONFIG = {
+    "google": {
+        "thinking_config": {
+            "thinking_level": "high",
+            "include_thoughts": False
+        },
+        "media_resolution": "media_resolution_medium"
+    }
+}
 
 AVAILABLE_LLMS = [
     "claude-3-5-sonnet-20240620",
@@ -51,6 +60,7 @@ AVAILABLE_LLMS = [
     "gemini-2.0-flash",
     "gemini-2.5-flash-preview-04-17",
     "gemini-2.5-pro-preview-03-25",
+    "gemini-3.0-pro-preview",
     # GPT-OSS models via Ollama
     "ollama/gpt-oss:20b",
     "ollama/gpt-oss:120b",
@@ -168,18 +178,26 @@ def get_batch_responses_from_llm(
             new_msg_history + [{"role": "assistant", "content": c}] for c in content
         ]
     elif 'gemini' in model:
+        if model == "gemini-3.0-pro-preview":
+            temperature = 1.0
         new_msg_history = msg_history + [{"role": "user", "content": msg}]
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
+        
+        kwargs = {
+            "model": model,
+            "messages": [
                 {"role": "system", "content": system_message},
                 *new_msg_history,
             ],
-            temperature=temperature,
-            max_tokens=MAX_NUM_TOKENS,
-            n=n_responses,
-            stop=None,
-        )
+            "temperature": temperature,
+            "max_tokens": MAX_NUM_TOKENS,
+            "n": n_responses,
+            "stop": None,
+        }
+        
+        if model == "gemini-3.0-pro-preview":
+            kwargs["extra_body"] = GEMINI_3_CONFIG
+
+        response = client.chat.completions.create(**kwargs)
         content = [r.message.content for r in response.choices]
         new_msg_history = [
             new_msg_history + [{"role": "assistant", "content": c}] for c in content
@@ -421,17 +439,25 @@ def get_response_from_llm(
         content = response.choices[0].message.content
         new_msg_history = new_msg_history + [{"role": "assistant", "content": content}]
     elif 'gemini' in model:
+        if model == "gemini-3.0-pro-preview":
+            temperature = 1.0
         new_msg_history = msg_history + [{"role": "user", "content": msg}]
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
+        
+        kwargs = {
+            "model": model,
+            "messages": [
                 {"role": "system", "content": system_message},
                 *new_msg_history,
             ],
-            temperature=temperature,
-            max_tokens=MAX_NUM_TOKENS,
-            n=1,
-        )
+            "temperature": temperature,
+            "max_tokens": MAX_NUM_TOKENS,
+            "n": 1,
+        }
+        
+        if model == "gemini-3.0-pro-preview":
+            kwargs["extra_body"] = GEMINI_3_CONFIG
+
+        response = client.chat.completions.create(**kwargs)
         content = response.choices[0].message.content
         new_msg_history = new_msg_history + [{"role": "assistant", "content": content}]
     else:

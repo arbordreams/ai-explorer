@@ -10,12 +10,19 @@ from ai_scientist.utils.token_tracker import track_token_usage
 
 MAX_NUM_TOKENS = 4096
 
+GEMINI_VISION_CONFIG = {
+    "google": {
+        "media_resolution": "media_resolution_medium"
+    }
+}
+
 AVAILABLE_VLMS = [
     "gpt-4o-2024-05-13",
     "gpt-4o-2024-08-06",
     "gpt-4o-2024-11-20",
     "gpt-4o-mini-2024-07-18",
     "o3-mini",
+    "gemini-3.0-pro-preview",
 
     # Ollama models
 
@@ -104,16 +111,21 @@ def make_vlm_call(client, model, temperature, system_message, prompt):
             temperature=temperature,
             max_tokens=MAX_NUM_TOKENS,
         )
-    elif "gpt" in model:
-        return client.chat.completions.create(
-            model=model,
-            messages=[
+    elif "gpt" in model or "gemini" in model:
+        kwargs = {
+            "model": model,
+            "messages": [
                 {"role": "system", "content": system_message},
                 *prompt,
             ],
-            temperature=temperature,
-            max_tokens=MAX_NUM_TOKENS,
-        )
+            "temperature": temperature,
+            "max_tokens": MAX_NUM_TOKENS,
+        }
+        if model == "gemini-3.0-pro-preview":
+            kwargs["temperature"] = 1.0
+            kwargs["extra_body"] = GEMINI_VISION_CONFIG
+
+        return client.chat.completions.create(**kwargs)
     else:
         raise ValueError(f"Model {model} not supported.")
 
@@ -203,6 +215,12 @@ def create_client(model: str) -> tuple[Any, str]:
     ]:
         print(f"Using OpenAI API with model {model}.")
         return openai.OpenAI(), model
+    elif "gemini" in model:
+        print(f"Using Google Gemini API with model {model}.")
+        return openai.OpenAI(
+            api_key=os.environ["GEMINI_API_KEY"],
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        ), model
     elif model.startswith("ollama/"):
         print(f"Using Ollama API with model {model}.")
         return openai.OpenAI(
@@ -314,18 +332,24 @@ def get_batch_responses_from_vlm(
                 seed=0,
             )
         else:
-            # Get multiple responses
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
+            kwargs = {
+                "model": model,
+                "messages": [
                     {"role": "system", "content": system_message},
                     *new_msg_history,
                 ],
-                temperature=temperature,
-                max_tokens=MAX_NUM_TOKENS,
-                n=n_responses,
-                seed=0,
-            )
+                "temperature": temperature,
+                "max_tokens": MAX_NUM_TOKENS,
+                "n": n_responses,
+                "seed": 0,
+            }
+
+            if model == "gemini-3.0-pro-preview":
+                kwargs["temperature"] = 1.0
+                kwargs["extra_body"] = GEMINI_VISION_CONFIG
+
+            # Get multiple responses
+            response = client.chat.completions.create(**kwargs)
 
         # Extract content from all responses
         contents = [r.message.content for r in response.choices]
