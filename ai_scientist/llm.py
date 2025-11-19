@@ -9,19 +9,9 @@ import backoff
 import openai
 
 MAX_NUM_TOKENS = 4096
-GEMINI_3_CONFIG = {
-    "google": {
-        "thinking_config": {
-            "thinking_level": "high",
-            "include_thoughts": False
-        },
-        "media_resolution": "media_resolution_medium"
-    }
-}
 
 AVAILABLE_LLMS = [
-    "claude-3-5-sonnet-20240620",
-    "claude-3-5-sonnet-20241022",
+    "gemini-3-pro-preview",
     # OpenAI models
     "gpt-4o-mini",
     "gpt-4o-mini-2024-07-18",
@@ -57,10 +47,7 @@ AVAILABLE_LLMS = [
     "vertex_ai/claude-3-sonnet@20240229",
     "vertex_ai/claude-3-haiku@20240307",
     # Google Gemini models
-    "gemini-2.0-flash",
-    "gemini-2.5-flash-preview-04-17",
-    "gemini-2.5-pro-preview-03-25",
-    "gemini-3.0-pro-preview",
+    "gemini-3-pro-preview",
     # GPT-OSS models via Ollama
     "ollama/gpt-oss:20b",
     "ollama/gpt-oss:120b",
@@ -178,7 +165,7 @@ def get_batch_responses_from_llm(
             new_msg_history + [{"role": "assistant", "content": c}] for c in content
         ]
     elif 'gemini' in model:
-        if model == "gemini-3.0-pro-preview":
+        if model == "gemini-3-pro-preview":
             temperature = 1.0
         new_msg_history = msg_history + [{"role": "user", "content": msg}]
         
@@ -194,8 +181,9 @@ def get_batch_responses_from_llm(
             "stop": None,
         }
         
-        if model == "gemini-3.0-pro-preview":
-            kwargs["extra_body"] = GEMINI_3_CONFIG
+        if model == "gemini-3-pro-preview":
+             # Ensure no extra_body is passed for Gemini 3.0
+             kwargs.pop("extra_body", None)
 
         response = client.chat.completions.create(**kwargs)
         content = [r.message.content for r in response.choices]
@@ -439,7 +427,7 @@ def get_response_from_llm(
         content = response.choices[0].message.content
         new_msg_history = new_msg_history + [{"role": "assistant", "content": content}]
     elif 'gemini' in model:
-        if model == "gemini-3.0-pro-preview":
+        if model == "gemini-3-pro-preview":
             temperature = 1.0
         new_msg_history = msg_history + [{"role": "user", "content": msg}]
         
@@ -454,8 +442,9 @@ def get_response_from_llm(
             "n": 1,
         }
         
-        if model == "gemini-3.0-pro-preview":
-            kwargs["extra_body"] = GEMINI_3_CONFIG
+        if model == "gemini-3-pro-preview":
+             # Ensure no extra_body is passed for Gemini 3.0
+             kwargs.pop("extra_body", None)
 
         response = client.chat.completions.create(**kwargs)
         content = response.choices[0].message.content

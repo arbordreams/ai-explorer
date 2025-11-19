@@ -456,8 +456,8 @@ def perform_writeup(
     base_folder,
     no_writing=False,
     num_cite_rounds=20,
-    small_model="gemini-3.0-pro-preview",
-    big_model="gemini-3.0-pro-preview",
+    small_model="gemini-3-pro-preview",
+    big_model="gemini-3-pro-preview",
     n_writeup_reflections=3,
     page_limit=8,
 ):
@@ -768,14 +768,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="gemini-3.0-pro-preview",
+        default="gemini-3-pro-preview",
         choices=AVAILABLE_LLMS,
         help="Model to use for citation collection (small model).",
     )
     parser.add_argument(
         "--big-model",
         type=str,
-        default="gemini-3.0-pro-preview",
+        default="gemini-3-pro-preview",
         choices=AVAILABLE_LLMS,
         help="Model to use for final writeup (big model).",
     )

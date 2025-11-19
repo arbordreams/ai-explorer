@@ -1,0 +1,22 @@
+Align-and-Grow (A&G): Compute-Aware Vocabulary Transfer for Medical NLP
+
+One-page summary: A&G co-evolves the tokenizer and model under a strict compute budget. We seed with augment->align (add high-yield medical terms, then TokAlign weight transfer), then perform adaptive bursts of small vocabulary growth. Each burst uses a compute-aware selector, local re-alignment for new tokens, and a brief stabilization phase. We measure efficiency with Tokens-to-Target-Perplexity (TtTP) and preserve safety via scope-limited updates.
+
+Abstract (approx. 170 words)
+
+We propose Align-and-Grow (A&G), a compute-efficient method for adapting large language models to medical text without parallel data. A&G unifies two lines of work--tokenizer augmentation and token-space alignment--and adds a simple adaptive loop that grows the tokenizer in small bursts during fine-tuning. Each burst selects terms by a compute-aware score (expected tokens saved plus optional gradient signal), augments the tokenizer, and performs local re-alignment only for the newly added tokens using soft (OT/softmax) initialization on top-k neighbors. A short, high-LR stabilization on the embedding/LM-head follows, after which training resumes. We optimize for TtTP (total tokens processed to reach a fixed perplexity target) and report tokenization diagnostics (OOV%, fragments per medical term, tokens/doc), alignment quality (P@1, margin bins), and task quality (PubMedQA). On 1-8B models with ~1 GB curated medical text, we expect -33-47% TtTP vs plain fine-tuning, beating TokAlign-only by ~20-30% TtTP and AdaptiVocab-only by ~5-15% while preserving safety. We release alignment matrices, tokenizer diffs, mined term lists, and a five-minute reproduction path.
+
+Motivation & Problem
+
+Goal: Compute-efficient domain transfer to medicine with minimal drift from base safety behavior.
+
+Problem: General tokenizers fragment medical terms, inflating sequence length and slowing learning; alignment methods swap vocabularies but do not add missing medical terms; expansion methods add terms but do not transfer weights or enable token-level KD.
+
+Angle: Frame adaptation as minimizing TtTP to a fixed dev perplexity tau while preserving quality and safety.
+
+Related Gap (why new)
+
+Prior art treats alignment and expansion separately.
+
+A&G introduces adaptive bursts with local re-alignment and a compute-aware acceptance gate--a simple, novel combination that keeps compute low while improving segmentation.
+

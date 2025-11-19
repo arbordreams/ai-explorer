@@ -10,19 +10,14 @@ from ai_scientist.utils.token_tracker import track_token_usage
 
 MAX_NUM_TOKENS = 4096
 
-GEMINI_VISION_CONFIG = {
-    "google": {
-        "media_resolution": "media_resolution_medium"
-    }
-}
 
 AVAILABLE_VLMS = [
+    "gemini-3-pro-preview",
     "gpt-4o-2024-05-13",
     "gpt-4o-2024-08-06",
     "gpt-4o-2024-11-20",
     "gpt-4o-mini-2024-07-18",
     "o3-mini",
-    "gemini-3.0-pro-preview",
 
     # Ollama models
 
@@ -121,9 +116,10 @@ def make_vlm_call(client, model, temperature, system_message, prompt):
             "temperature": temperature,
             "max_tokens": MAX_NUM_TOKENS,
         }
-        if model == "gemini-3.0-pro-preview":
+        if model == "gemini-3-pro-preview":
             kwargs["temperature"] = 1.0
-            kwargs["extra_body"] = GEMINI_VISION_CONFIG
+            # Ensure no extra_body is passed for Gemini 3.0
+            kwargs.pop("extra_body", None)
 
         return client.chat.completions.create(**kwargs)
     else:
@@ -172,7 +168,7 @@ def get_response_from_vlm(
                     "type": "image_url",
                     "image_url": {
                         "url": f"data:image/jpeg;base64,{base64_image}",
-                        "detail": "low",
+                        "detail": "high",
                     },
                 }
             )
@@ -311,7 +307,7 @@ def get_batch_responses_from_vlm(
                     "type": "image_url",
                     "image_url": {
                         "url": f"data:image/jpeg;base64,{base64_image}",
-                        "detail": "low",
+                        "detail": "high",
                     },
                 }
             )
@@ -344,9 +340,10 @@ def get_batch_responses_from_vlm(
                 "seed": 0,
             }
 
-            if model == "gemini-3.0-pro-preview":
+            if model == "gemini-3-pro-preview":
                 kwargs["temperature"] = 1.0
-                kwargs["extra_body"] = GEMINI_VISION_CONFIG
+                # Ensure no extra_body is passed for Gemini 3.0
+                kwargs.pop("extra_body", None)
 
             # Get multiple responses
             response = client.chat.completions.create(**kwargs)

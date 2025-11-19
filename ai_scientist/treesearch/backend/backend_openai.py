@@ -18,15 +18,6 @@ OPENAI_TIMEOUT_EXCEPTIONS = (
     openai.InternalServerError,
 )
 
-GEMINI_3_CONFIG = {
-    "google": {
-        "thinking_config": {
-            "thinking_level": "high",
-            "include_thoughts": False
-        },
-        "media_resolution": "media_resolution_medium"
-    }
-}
 
 def get_ai_client(model: str, max_retries=2) -> openai.OpenAI:
     if model.startswith("ollama/"):
@@ -64,9 +55,10 @@ def query(
     if filtered_kwargs.get("model", "").startswith("ollama/"):
        filtered_kwargs["model"] = filtered_kwargs["model"].replace("ollama/", "")
     
-    if filtered_kwargs.get("model") == "gemini-3.0-pro-preview":
+    if filtered_kwargs.get("model") == "gemini-3-pro-preview":
         filtered_kwargs["temperature"] = 1.0
-        filtered_kwargs["extra_body"] = GEMINI_3_CONFIG
+        # Ensure no extra_body is passed for Gemini 3.0
+        filtered_kwargs.pop("extra_body", None)
 
     t0 = time.time()
     completion = backoff_create(

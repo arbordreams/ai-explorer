@@ -29,7 +29,7 @@ def extract_jsons(text):
         except json.JSONDecodeError:
             pass
 
-    # Sometimes chatgpt-turbo forget the last curly bracket, so we try to add it back when no json is found
+    # Sometimes models forget the last curly bracket, so we try to add it back when no json is found
     if len(json_objects) == 0 and not text.endswith("}"):
         json_objects = extract_jsons(text + "}")
         if len(json_objects) > 0:

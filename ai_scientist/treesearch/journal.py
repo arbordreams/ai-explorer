@@ -468,7 +468,7 @@ class Journal:
 
         try:
             if cfg is None or cfg.agent.get("select_node", None) is None:
-                model = "gemini-3.0-pro-preview"
+                model = "gemini-3-pro-preview"
                 temperature = 1.0
             else:
                 model = cfg.agent.select_node.model
@@ -541,7 +541,7 @@ class Journal:
                 "2. Common failure patterns and pitfalls to avoid\n"
                 "3. Specific recommendations for future experiments based on both successes and failures"
             ),
-            model=model_kwargs.get("model", "gemini-3.0-pro-preview"),
+            model=model_kwargs.get("model", "gemini-3-pro-preview"),
             temperature=model_kwargs.get("temp", 1.0)
         )
 
@@ -604,7 +604,7 @@ class Journal:
         stage_summary = query(
             system_message=summary_prompt,
             user_message="Generate a comprehensive summary of the experimental findings in this stage",
-            model=cfg.agent.summary.model if cfg.agent.get("summary", None) else "gemini-3.0-pro-preview",
+            model=cfg.agent.summary.model if cfg.agent.get("summary", None) else "gemini-3-pro-preview",
             temperature=cfg.agent.summary.temp if cfg.agent.get("summary", None) else 1.0
         )
 

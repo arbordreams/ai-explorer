@@ -6,7 +6,7 @@ def get_ai_client(model: str, **model_kwargs):
     Get the appropriate AI client based on the model string.
 
     Args:
-        model (str): string identifier for the model to use (e.g. "gpt-4-turbo")
+        model (str): string identifier for the model to use (e.g. "gemini-3-pro-preview")
         **model_kwargs: Additional keyword arguments for model configuration.
     Returns:
         An instance of the appropriate AI client.
@@ -32,7 +32,7 @@ def query(
     Args:
         system_message (PromptType | None): Uncompiled system message (will generate a message following the OpenAI/Anthropic format)
         user_message (PromptType | None): Uncompiled user message (will generate a message following the OpenAI/Anthropic format)
-        model (str): string identifier for the model to use (e.g. "gpt-4-turbo")
+        model (str): string identifier for the model to use (e.g. "gemini-3-pro-preview")
         temperature (float | None, optional): Temperature to sample at. Defaults to the model-specific default.
         max_tokens (int | None, optional): Maximum number of tokens to generate. Defaults to the model-specific max tokens.
         func_spec (FunctionSpec | None, optional): Optional FunctionSpec object defining a function call. If given, the return value will be a dict.
@@ -63,6 +63,9 @@ def query(
         model_kwargs["max_completion_tokens"] = 100000  # max_tokens
         # remove 'temperature' from model_kwargs
         model_kwargs.pop("temperature", None)
+    elif model == "gemini-3-pro-preview":
+        model_kwargs["temperature"] = 1.0
+        model_kwargs["max_tokens"] = max_tokens
     else:
         model_kwargs["max_tokens"] = max_tokens
 
